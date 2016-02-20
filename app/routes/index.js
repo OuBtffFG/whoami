@@ -4,7 +4,6 @@ var path = process.cwd();
 var ClickHandler = require(path + '/app/controllers/clickHandler.server.js');
 
 module.exports = function (app, passport) {
-
 	function isLoggedIn (req, res, next) {
 		if (req.isAuthenticated()) {
 			return next();
@@ -15,6 +14,21 @@ module.exports = function (app, passport) {
 
 	var clickHandler = new ClickHandler();
 
+	app.route('/')
+		.all(function (req, res){
+			var ipArr=req.header('x-forwarded-for').split(",");
+			var langArr=req.headers["accept-language"].split(',');
+			var brow=req.headers["user-agent"];
+			var browStart=brow.indexOf("(")+1;
+			var browLen=brow.indexOf(")")-browStart;
+			brow=brow.substr(browStart,browLen);
+			var resp="{\"ipaddress\":\"" + ipArr[0] +"\",\"language\":\"" + langArr[0] + "\",\"software\":\""+ brow + "\"}";
+			res.send(resp);
+		});
+
+
+
+/* OLD CODE
 	app.route('/')
 		.get(isLoggedIn, function (req, res) {
 			res.sendFile(path + '/public/index.html');
@@ -54,4 +68,5 @@ module.exports = function (app, passport) {
 		.get(isLoggedIn, clickHandler.getClicks)
 		.post(isLoggedIn, clickHandler.addClick)
 		.delete(isLoggedIn, clickHandler.resetClicks);
+*/
 };
